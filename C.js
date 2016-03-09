@@ -49,6 +49,35 @@
                 }
             }
             return  arr;
+        },
+
+        //只是获取元素的直接父元素，而不去获取爷爷辈的元素 - -。
+        parent :function(){
+            var arr = [];
+            for(var i = 0;i< this.length;i++){
+                if(this[i].parentNode.nodeType != 11){
+                    arr.push(this[i].parentNode)
+                }
+            }
+            return arr;
+        },
+
+        //一层一层的找上去
+        //nodeType 为9时时document，不再往上找
+        parents: function(){
+            var arr = [];
+            for(var i = 0;i< this.length;i++){
+                var currentNode = this[i];
+                while((currentNode = currentNode.parentNode) && currentNode.nodeType != 9 && arr.indexOf(currentNode) == -1){
+                    arr.push(currentNode);
+                }
+            }
+
+            return arr;
+        },
+
+        parentsUntil: function(filter){
+
         }
 
     }
