@@ -4,15 +4,21 @@
 
 (function(window){
 
-    var C = function(selector){
-        return new C.prototype.init(selector);
+    var version = "0.1";
+    var core_trim = '';
+    var domReady = false;
+
+    var C = function(selector,fn){
+        return new C.prototype.init(selector,fn);
     }
 
     C.prototype = {
-        init:function(selector){
+        init: function(selector, fn){
             if(!selector)return;
 
-            if(selector.slice(0,1) == "#"){
+            if(C.isFunction(selector)){
+                 this.ready(fn);
+            }else if(selector.slice(0,1) == "#"){
                 this[0] = document.getElementById(selector.slice(1));
                 this.length = 1;
             }else if(selector.slice(0,1) == "."){
@@ -25,8 +31,18 @@
 
             return this;
         },
-        name:"C",
-        length:0,
+        ready: function(fn){
+            var hasReadyFn = function(){
+                if(domReady)return;
+                domReady = false;
+                fn && fn();
+            }
+            document.addEventListener("DOMContentLoaded",hasReadyFn,false);
+            document.addEventListener("load",hasReadyFn,false);
+        },
+        name: "C",
+        version: version,
+        length: 0,
         get: function(index){
             if(index != null || index != undefined){
                 return this[index];
@@ -78,10 +94,16 @@
 
         parentsUntil: function(filter){
 
+        },
+
+        each: function(callback){
+            C.each(this,callback);
         }
 
     }
 
+
+    //静态方法
 
     //扩展方法
     C.extend = C.prototype.extend = function(){
@@ -107,6 +129,55 @@
         }
         return target;
     }
+
+    C.typeOf = function(obj){
+      var typeStr = Object.prototype.toString.call(obj);
+      return typeStr.split(" ")[1].toLocaleLowerCase().replace(/\]/g,"");
+    }
+
+    C.isArray = function(arr){
+        return this.typeOf(arr) == "array";   
+    }
+
+    C.isObject = function(obj){
+        return this.typeOf(obj) == "object";
+    }
+
+    C.isFunction = function(fn){
+        return this.typeOf(fn) == "function";
+    }
+
+    C.trim = function(str){
+        if(str === null)return "";
+        return core_trim ? core_trim.call(str) : (str + "").replace(/^\s+|\s+$/g,"")
+    }
+
+    C.each = function(arr, callback){
+       if(!arr || arr.length == 0)return;
+       for(var i = 0; i < arr.length; i++){
+           callback && callback.call(arr[i]);
+       }
+       return arr;
+    }
+
+    C.map = function(arr, callback){
+        var isArray = this.isArray(arr);
+        var _arr = [], rt = null;
+        if(isArray || arr.length){
+            for(var i = 0; i < arr.length; i++){
+                rt = callback && callback(arr[i]);
+                if(C.isArray(rt)){
+                    _arr = arr.concat(rt);
+                }else if(rt === null){
+                    continue;
+                }else{
+                    _arr.push(rt);
+                }
+            }
+        }
+        return _arr;
+    }
+
 
 
     C.prototype.init.prototype = C.prototype;
